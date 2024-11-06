@@ -1,8 +1,8 @@
-"""init commit
+"""init
 
-Revision ID: 19d726123156
+Revision ID: bee10bc49484
 Revises: 
-Create Date: 2024-11-04 18:53:45.946076
+Create Date: 2024-11-06 22:58:42.422428
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '19d726123156'
+revision = 'bee10bc49484'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,7 +27,8 @@ def upgrade():
     sa.Column('fully_invested', sa.Boolean(), nullable=True),
     sa.Column('create_date', sa.DateTime(), nullable=True),
     sa.Column('close_date', sa.DateTime(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name')
     )
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -48,7 +49,7 @@ def upgrade():
     sa.Column('fully_invested', sa.Boolean(), nullable=True),
     sa.Column('create_date', sa.DateTime(), nullable=True),
     sa.Column('close_date', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], name='fk_reservation_user_id_user'),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], name='fk_donation_user_id_user'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

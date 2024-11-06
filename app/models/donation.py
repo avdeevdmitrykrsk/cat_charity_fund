@@ -10,7 +10,7 @@ class Donation(Base):
 
     user_id = Column(
         Integer,
-        ForeignKey('user.id', name='fk_reservation_user_id_user')
+        ForeignKey('user.id', name='fk_donation_user_id_user')
     )
     comment = Column(Text)
     full_amount = Column(Integer)

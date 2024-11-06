@@ -1,14 +1,13 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
-# from sqlalchemy.orm import relationship
 
 from app.core.db import Base
 
 
 class CharityProject(Base):
 
-    name = Column(String(100), nullable=False)
+    name = Column(String(100), nullable=False, unique=True)
     description = Column(Text, nullable=False)
     full_amount = Column(Integer, default=1)
     invested_amount = Column(Integer, default=0)
