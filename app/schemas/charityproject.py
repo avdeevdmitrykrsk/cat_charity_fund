@@ -1,12 +1,7 @@
 from datetime import datetime
-
 from typing import Optional
 
-from fastapi import HTTPException
-from pydantic import BaseModel, PositiveInt, Field, validator
-from sqlalchemy import select
-
-from app.models import CharityProject
+from pydantic import BaseModel, Extra, Field, PositiveInt
 
 
 class CharityProjectCreate(BaseModel):
@@ -34,3 +29,6 @@ class CharityProjectUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, min_length=1)
     full_amount: Optional[PositiveInt]
+
+    class Config:
+        extra = Extra.forbid

@@ -1,89 +1,85 @@
+import logging
 from datetime import datetime
-from typing import Optional, Union
+from typing import Union
 
-from sqlalchemy import asc, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.models import CharityProject, Donation
 
-from app.models import Donation
-from app.models import CharityProject
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(message)s',
+    handlers=(logging.StreamHandler(),)
+)
+
+logger = logging.getLogger(__name__)
 
 
 class InvestingService:
 
     @staticmethod
-    async def __calculate_invest(obj_in, db_obj):
-        if obj_in.__class__ == CharityProject:
-            obj_in, db_obj = db_obj, obj_in
+    def __calculate_invest(new_obj, investing_obj):
 
-        obj_in_invest_amount = obj_in.invested_amount
-        obj_in_full_amount = obj_in.full_amount - obj_in_invest_amount
+        new_obj_invested_amount = new_obj.invested_amount
+        new_obj_full_amount = new_obj.full_amount
 
-        db_obj_invest_amount = db_obj.invested_amount
-        db_obj_full_amount = db_obj.full_amount - db_obj_invest_amount
+        investing_obj_invested_amount = investing_obj.invested_amount
+        investing_obj_full_amount = (
+            investing_obj.full_amount
+        )
 
-        if db_obj_full_amount > obj_in_full_amount:
-            db_obj_invest_amount += obj_in_full_amount
-            obj_in_invest_amount += obj_in_full_amount
-        elif db_obj_full_amount <= obj_in_full_amount:
-            profit = db_obj_full_amount - db_obj_invest_amount
-            db_obj_invest_amount += profit
-            obj_in_invest_amount += profit
+        expected_value = (
+            investing_obj_full_amount - investing_obj_invested_amount
+        )
+        logger.info(f'{new_obj_full_amount} --- {expected_value}')
+        if new_obj_full_amount < expected_value:
+            logger.info('if')
+            investing_obj_invested_amount += new_obj_full_amount
+            new_obj_invested_amount = new_obj_full_amount
+        elif new_obj_full_amount > expected_value:
+            logger.info('elif')
+            new_obj_invested_amount += (
+                investing_obj_full_amount - investing_obj_invested_amount
+            )
+            investing_obj_invested_amount = investing_obj_full_amount
+        else:
+            logger.info('else')
+            new_obj_invested_amount = new_obj_full_amount
+            investing_obj_invested_amount = investing_obj_full_amount
 
+        logger.info(f'{investing_obj_invested_amount}')
         return (
-            obj_in_invest_amount,
-            obj_in_full_amount,
-            db_obj_invest_amount,
-            db_obj_full_amount
+            new_obj_invested_amount,
+            new_obj_full_amount,
+            investing_obj_invested_amount,
+            investing_obj_full_amount
         )
 
-    @staticmethod
-    async def __get_investing_obj(
-        model: Union[CharityProject, Donation],
-        session: AsyncSession
-    ) -> Optional[Union[CharityProject, Donation]]:
-        db_obj = await session.execute(
-            select(model).where(
-                model.fully_invested.is_(False)
-            ).order_by(asc(model.id))
-        )
-        db_obj = db_obj.scalars().first()
-        return db_obj
-
-    @staticmethod
-    async def __get_invest_model(obj_in: Union[CharityProject, Donation]):
-        SWAP_MODELS = {
-            Donation: CharityProject,
-            CharityProject: Donation
-        }
-        return SWAP_MODELS[obj_in.__class__]
-
-    async def investing_service(
+    def cursed_service(
         self,
-        obj_in: Union[CharityProject, Donation],
-        session: AsyncSession
+        new_obj: Union[CharityProject, Donation],
+        investing_objs: Union[CharityProject, Donation],
     ) -> Union[CharityProject, Donation]:
-        model = await self.__get_invest_model(obj_in)
+        model = new_obj.__class__
+        for investing_obj in investing_objs:
+            if new_obj.__class__ == CharityProject:
+                new_obj, investing_obj = investing_obj, new_obj
+            (
+                new_obj_invested_amount,
+                new_obj_full_amount,
+                investing_obj_invested_amount,
+                investing_obj_full_amount
+            ) = self.__calculate_invest(new_obj, investing_obj)
 
-        while True:
-            db_obj = await self.__get_investing_obj(model, session)
-            if db_obj:
-                (
-                    obj_in_invest_amount, obj_in_full_amount,
-                    db_obj_invest_amount, db_obj_full_amount
-                ) = await self.__calculate_invest(obj_in, db_obj)
+            new_obj.invested_amount = new_obj_invested_amount
+            investing_obj.invested_amount = investing_obj_invested_amount
 
-                setattr(obj_in, 'invested_amount', obj_in_invest_amount)
-                setattr(db_obj, 'invested_amount', db_obj_invest_amount)
-                if db_obj.full_amount == db_obj.invested_amount:
-                    setattr(db_obj, 'fully_invested', True)
-                    setattr(db_obj, 'close_date', datetime.now())
-                    session.add(db_obj)
-            break
+            if investing_obj.full_amount == investing_obj.invested_amount:
+                setattr(investing_obj, 'fully_invested', True)
+                setattr(investing_obj, 'close_date', datetime.now())
+            if new_obj.full_amount == new_obj.invested_amount:
+                setattr(new_obj, 'fully_invested', True)
+                setattr(new_obj, 'close_date', datetime.now())
+                break
 
-        if obj_in.full_amount == obj_in.invested_amount:
-            setattr(obj_in, 'fully_invested', True)
-            setattr(db_obj, 'close_date', datetime.now())
-            session.add(obj_in)
-        await session.commit()
-        await session.refresh(obj_in)
-        return obj_in
+        if model == CharityProject:
+            new_obj, investing_obj = investing_obj, new_obj
+        return new_obj, investing_objs
