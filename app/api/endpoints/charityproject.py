@@ -6,8 +6,10 @@ from app.api.validators import (check_obj_exist, check_unique_name,
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charityproject import charity_crud
+from app.models import Donation
 from app.schemas.charityproject import (CharityProjectCreate, CharityProjectDB,
                                         CharityProjectUpdate)
+from app.services import make_investition
 
 router = APIRouter()
 
@@ -45,8 +47,16 @@ async def make_charity_project(
 ) -> CharityProjectDB:
     """Только для суперюзеров."""
     db_obj = await check_unique_name(name=obj_in.name, session=session)
-    db_obj = await charity_crud.create(obj_in, session)
-    db_obj = await charity_crud.make_transactions(db_obj, session)
+    db_obj = await charity_crud.create(obj_in=obj_in, session=session)
+
+    investing_objs = await charity_crud.get_investing_objs(Donation, session)
+    if investing_objs:
+        db_objs = make_investition(db_obj, investing_objs)
+        session.add_all(db_objs)
+    session.add(db_obj)
+
+    await session.commit()
+    await session.refresh(db_obj)
     return db_obj
 
 
@@ -75,5 +85,5 @@ async def delete_charity_project(
 async def get_all_charity_projects(
     session: AsyncSession = Depends(get_async_session)
 ) -> list[CharityProjectDB]:
-    db_objs = await charity_crud.get_multi(session)
+    db_objs = await charity_crud.get_multi(session=session)
     return db_objs
