@@ -53,7 +53,6 @@ async def make_charity_project(
     if investing_objs:
         db_objs = make_investition(db_obj, investing_objs)
         session.add_all(db_objs)
-    session.add(db_obj)
 
     await session.commit()
     await session.refresh(db_obj)

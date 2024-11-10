@@ -5,6 +5,13 @@ def make_investition(target, sources):
     changed_sources = []
 
     for source in sources:
+
+        #  Затычка.
+        #  в тестах вместо нуля прилетает None.
+        #  при этом посылая запросы через Swagger все ок, прилетает ноль.
+        if not getattr(target, 'invested_amount'):
+            target.invested_amount = 0
+
         target_available = target.full_amount - target.invested_amount
         source_available = source.full_amount - source.invested_amount
 

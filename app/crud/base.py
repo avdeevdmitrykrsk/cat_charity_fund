@@ -14,8 +14,6 @@ ModelType = TypeVar('ModelType', bound=Base)  # type: ignore
 CreateSchemaType = TypeVar('CreateSchemaType', bound=BaseModel)
 UpdateSchemaType = TypeVar('UpdateSchemaType', bound=BaseModel)
 
-DEFAULT_INVEST_COUNT = 0
-
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 

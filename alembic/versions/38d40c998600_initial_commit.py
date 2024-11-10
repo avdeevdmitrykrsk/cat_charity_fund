@@ -1,8 +1,8 @@
-"""init
+"""initial commit
 
-Revision ID: 6308ad6e6cdf
+Revision ID: 38d40c998600
 Revises: 
-Create Date: 2024-11-09 22:45:17.340465
+Create Date: 2024-11-10 13:59:58.420095
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6308ad6e6cdf'
+revision = '38d40c998600'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,7 +21,7 @@ def upgrade():
     op.create_table('charityproject',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('full_amount', sa.Integer(), nullable=False),
-    sa.Column('invested_amount', sa.Integer(), nullable=True),
+    sa.Column('invested_amount', sa.Integer(), nullable=False),
     sa.Column('fully_invested', sa.Boolean(), nullable=True),
     sa.Column('create_date', sa.DateTime(), nullable=True),
     sa.Column('close_date', sa.DateTime(), nullable=True),
@@ -43,7 +43,7 @@ def upgrade():
     op.create_table('donation',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('full_amount', sa.Integer(), nullable=False),
-    sa.Column('invested_amount', sa.Integer(), nullable=True),
+    sa.Column('invested_amount', sa.Integer(), nullable=False),
     sa.Column('fully_invested', sa.Boolean(), nullable=True),
     sa.Column('create_date', sa.DateTime(), nullable=True),
     sa.Column('close_date', sa.DateTime(), nullable=True),

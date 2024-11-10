@@ -1,10 +1,10 @@
 from sqlalchemy import Column, ForeignKey, Integer, Text
 
-from . import CharityDonationBase
+from .base import CharityDonationMixin
 from app.core.db import Base
 
 
-class Donation(Base, CharityDonationBase):
+class Donation(CharityDonationMixin, Base):
 
     user_id = Column(
         Integer,
