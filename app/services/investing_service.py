@@ -6,9 +6,7 @@ def make_investition(target, sources):
 
     for source in sources:
 
-        #  Затычка.
-        #  в тестах вместо нуля прилетает None.
-        #  при этом посылая запросы через Swagger все ок, прилетает ноль.
+        #  Затычка для тестов.
         if not getattr(target, 'invested_amount'):
             target.invested_amount = 0
 
@@ -19,10 +17,8 @@ def make_investition(target, sources):
         if not accepted_value:
             break
 
-        target.invested_amount += accepted_value
-        source.invested_amount += accepted_value
-
         for obj in (target, source):
+            obj.invested_amount += accepted_value
             if obj.invested_amount == obj.full_amount:
                 setattr(obj, 'fully_invested', True)
                 setattr(obj, 'close_date', datetime.now())

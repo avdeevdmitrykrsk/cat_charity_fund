@@ -25,6 +25,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         *,
         obj_in,
         user=None,
+        commit=True,
         session: AsyncSession,
     ):
         obj_in_data = obj_in.dict()
@@ -33,6 +34,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         new_obj = self.model(**obj_in_data)
 
         session.add(new_obj)
+        if commit:
+            await session.commit()
+            await session.refresh(new_obj)
+
         return new_obj
 
     async def update(
@@ -67,11 +72,25 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def get(
         self,
-        project_id: int,
-        session: AsyncSession
+        session: AsyncSession,
+        **kwargs
     ):
+        filters = []
+
+        if not kwargs:
+            raise AttributeError(
+                'Не указан параметр для получения объекта'
+            )
+
+        for attr, value in kwargs.items():
+            if not hasattr(self.model, attr):
+                raise AttributeError(
+                    f'Attribute doesn\'t exist - "{attr}"'
+                )
+            filters.append(getattr(self.model, attr) == value)
+
         db_obj = await session.execute(
-            select(self.model).where(self.model.id == project_id)
+            select(self.model).where(*filters)
         )
         return db_obj.scalars().first()
 

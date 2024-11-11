@@ -27,7 +27,7 @@ async def check_obj_exist(
     project_id: int,
     session: AsyncSession
 ):
-    db_obj = await charity_crud.get(project_id, session)
+    db_obj = await charity_crud.get(session, id=project_id)
     if not db_obj:
         raise HTTPException(
             status_code=422,

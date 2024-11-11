@@ -47,7 +47,9 @@ async def make_charity_project(
 ) -> CharityProjectDB:
     """Только для суперюзеров."""
     db_obj = await check_unique_name(name=obj_in.name, session=session)
-    db_obj = await charity_crud.create(obj_in=obj_in, session=session)
+    db_obj = await charity_crud.create(
+        obj_in=obj_in, session=session, commit=False
+    )
 
     investing_objs = await charity_crud.get_investing_objs(Donation, session)
     if investing_objs:
@@ -56,6 +58,7 @@ async def make_charity_project(
 
     await session.commit()
     await session.refresh(db_obj)
+
     return db_obj
 
 

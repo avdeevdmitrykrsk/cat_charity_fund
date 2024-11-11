@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer
+from sqlalchemy import Boolean, Column, CheckConstraint, DateTime, Integer
 
 
 class CharityDonationMixin:
@@ -9,3 +9,12 @@ class CharityDonationMixin:
     fully_invested = Column(Boolean, default=False)
     create_date = Column(DateTime, default=datetime.now)
     close_date = Column(DateTime)
+
+    __table_args__ = (
+        CheckConstraint(
+            'invested_amount >= 0', name='check1_invested_amount'
+        ),
+        CheckConstraint(
+            'invested_amount <= full_amount', name='check2_invested_amount'
+        )
+    )
