@@ -1,6 +1,4 @@
-from datetime import datetime
-
-from sqlalchemy import and_, between, func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
