@@ -13,6 +13,8 @@ from app.services.google_api import (
 
 router = APIRouter()
 
+REPORT_LINK = 'https://docs.google.com/spreadsheets/d/'
+
 
 @router.get(
     '/',
@@ -30,4 +32,4 @@ async def get_report(
     await spreadsheets_update_value(spreadsheetid,
                                     projects,
                                     wrapper_services)
-    return {'info': 'report created'}
+    return {'report_link': f'{REPORT_LINK}{spreadsheetid}'}
